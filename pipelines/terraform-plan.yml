@@ -1,0 +1,73 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)-plan
+
+parameters:
+  - name: environment
+    displayName: 'Target Environment'
+    type: string
+    default: 'dev'
+    values:
+      - dev
+      - staging
+      - prod
+
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: terraformVersion
+    value: '1.9.0'
+  - name: azureServiceConnection
+    value: 'sc-azure-workload-identity' # Configured with Workload Identity Federation (OIDC)
+  - name: backendResourceGroup
+    value: 'rg-terraform-state-eastus2'
+  - name: backendStorageAccount
+    value: 'sttfstategd001'
+  - name: backendContainer
+    value: 'tfstate'
+  - name: stateKey
+    value: 'gd-parent-infra/${{ parameters.environment }}.tfstate'
+
+steps:
+  - task: TerraformInstaller@1
+    displayName: 'Install Terraform $(terraformVersion)'
+    inputs:
+      terraformVersion: '$(terraformVersion)'
+
+  - task: AzureCLI@2
+    displayName: 'Terraform Init & Plan'
+    inputs:
+      azureSubscription: '$(azureServiceConnection)'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        set -euo pipefail
+
+        echo "=== Initializing Backend with Remote Azure Storage ==="
+        terraform init \
+          -backend-config="resource_group_name=$(backendResourceGroup)" \
+          -backend-config="storage_account_name=$(backendStorageAccount)" \
+          -backend-config="container_name=$(backendContainer)" \
+          -backend-config="key=$(stateKey)" \
+          -backend-config="use_azuread_auth=true"
+
+        echo "=== Generating Plan for Environment: ${{ parameters.environment }} ==="
+        terraform plan \
+          -var-file="environments/${{ parameters.environment }}.tfvars" \
+          -out="${{ parameters.environment }}.tfplan"
+
+        # Export human-readable summary
+        terraform show -no-color "${{ parameters.environment }}.tfplan" > "${{ parameters.environment }}-plan.txt"
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Execution Plan'
+    inputs:
+      targetPath: '$(Build.SourcesDirectory)/${{ parameters.environment }}.tfplan'
+      artifact: '${{ parameters.environment }}-tfplan'
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Plan Text'
+    inputs:
+      targetPath: '$(Build.SourcesDirectory)/${{ parameters.environment }}-plan.txt'
+      artifact: '${{ parameters.environment }}-plantext'

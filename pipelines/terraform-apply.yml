@@ -1,0 +1,73 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)-apply
+
+parameters:
+  - name: environment
+    displayName: 'Target Environment'
+    type: string
+    default: 'dev'
+    values:
+      - dev
+      - staging
+      - prod
+
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: terraformVersion
+    value: '1.9.0'
+  - name: azureServiceConnection
+    value: 'sc-azure-workload-identity'
+  - name: backendResourceGroup
+    value: 'rg-terraform-state-eastus2'
+  - name: backendStorageAccount
+    value: 'sttfstategd001'
+  - name: backendContainer
+    value: 'tfstate'
+  - name: stateKey
+    value: 'gd-parent-infra/${{ parameters.environment }}.tfstate'
+
+stages:
+  - stage: Deploy
+    displayName: 'Apply Infrastructure to ${{ parameters.environment }}'
+    jobs:
+      - deployment: TerraformApply
+        displayName: 'Terraform Apply Job'
+        environment: ${{ parameters.environment }} # Linked to Azure DevOps Environment with Approval Gates
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: TerraformInstaller@1
+                  displayName: 'Install Terraform $(terraformVersion)'
+                  inputs:
+                    terraformVersion: '$(terraformVersion)'
+
+                - task: AzureCLI@2
+                  displayName: 'Terraform Init & Controlled Apply'
+                  inputs:
+                    azureSubscription: '$(azureServiceConnection)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      set -euo pipefail
+
+                      echo "=== Initializing Backend with Remote Azure Storage ==="
+                      terraform init \
+                        -backend-config="resource_group_name=$(backendResourceGroup)" \
+                        -backend-config="storage_account_name=$(backendStorageAccount)" \
+                        -backend-config="container_name=$(backendContainer)" \
+                        -backend-config="key=$(stateKey)" \
+                        -backend-config="use_azuread_auth=true"
+
+                      echo "=== Executing Terraform Apply for: ${{ parameters.environment }} ==="
+                      terraform apply \
+                        -auto-approve \
+                        -var-file="environments/${{ parameters.environment }}.tfvars"
+
+                      echo "=== Infrastructure Deployment Completed Successfully ==="
+                      terraform output -json > deployment-outputs.json

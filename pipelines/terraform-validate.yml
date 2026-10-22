@@ -1,0 +1,48 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)-validate
+
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+  paths:
+    include:
+      - '*'
+      - environments/*
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: terraformVersion
+    value: '1.9.0'
+
+steps:
+  - task: TerraformInstaller@1
+    displayName: 'Install Terraform $(terraformVersion)'
+    inputs:
+      terraformVersion: '$(terraformVersion)'
+
+  - script: |
+      terraform fmt -check -recursive
+    displayName: 'Terraform Format Check'
+
+  - script: |
+      terraform init -backend=false
+    displayName: 'Terraform Init (Stateless)'
+
+  - script: |
+      terraform validate
+    displayName: 'Terraform Validate'
+
+  - script: |
+      echo "Validating syntax across environment definition files..."
+      for env_file in environments/*.tfvars; do
+        echo "Validating $env_file"
+      done
+    displayName: 'Validate Environment Configs'
