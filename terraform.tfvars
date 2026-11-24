@@ -5,7 +5,6 @@ rg = {
   }
 }
 
-
 vnet = {
   vnet1 = {
     name                = "dev-gd-linux-vnet"
@@ -14,7 +13,6 @@ vnet = {
     address_space       = ["10.0.0.0/16"]
   }
 }
-
 
 subnets = {
   subnet1 = {
@@ -37,14 +35,6 @@ subnets = {
   }
 }
 
-# nsg = {
-#   nsg1 = {
-#     name                = "gd-linux-nsg"
-#     location            = "central india"
-#     resource_group_name = "dev-gd_linux_vm_rg"
-#   }
-# }
-
 pip = {
   Public_IP1 = {
     name                = "dev-gd-linux-ip"
@@ -54,10 +44,8 @@ pip = {
   }
 }
 
-
 nic = {
   nic1 = {
-
     name                          = "dev-gd-linux-nic"
     location                      = "central india"
     resource_group_name           = "dev-gd_linux_vm_rg"
@@ -69,23 +57,62 @@ nic = {
   }
 }
 
+# Optional modules (uncomment to activate):
+# nsg = {
+#   nsg1 = {
+#     name                = "gd-linux-nsg"
+#     location            = "central india"
+#     resource_group_name = "dev-gd_linux_vm_rg"
+#   }
+# }
+
 # virtual_machines = {
 #   frontend_1 = {
-#     nic_name        = "dev-gd-linux-vm-frontend"
-#     location        = "central india"
-
-#     subnet_name         = "dev-gd-linux-subnet"
-#     virtual_network_name = "dev-gd-linux-vnet"
-#     name         = "dev-gd-linux-vm-frontend"
-#     size         = "Standard_B1s"
-#     admin_username  = "devopsadmin"
+#     name                = "dev-gd-linux-vm-frontend"
+#     location            = "central india"
 #     resource_group_name = "dev-gd_linux_vm_rg"
-#     key_vault_name  = "kv-chor-dev-123"
-#     secret_name     = "admin-password"
-#     image_publisher = "Canonical"
-#     image_offer     = "0001-com-ubuntu-server-jammy"
-#     image_sku       = "22_04-lts"
-#     image_version   = "latest"
+#     nic_name            = "dev-gd-linux-nic"
+#     size                = "Standard_B1s"
+#     admin_username      = "devopsadmin"
+#     admin_password      = "ComplexPassword123!"
+#     image_publisher     = "Canonical"
+#     image_offer         = "0001-com-ubuntu-server-jammy"
+#     image_sku           = "22_04-lts"
+#     image_version       = "latest"
 #   }
+# }
 
+# route_tables = {
+#   rt1 = {
+#     name                = "rt-dev-001"
+#     resource_group_name = "dev-gd_linux_vm_rg"
+#     location            = "central india"
+#     routes              = []
+#   }
+# }
+
+# nat_gateways = {
+#   nat1 = {
+#     name                = "nat-dev-001"
+#     resource_group_name = "dev-gd_linux_vm_rg"
+#     location            = "central india"
+#   }
+# }
+
+# load_balancers = {
+#   lb1 = {
+#     name                = "lb-dev-001"
+#     resource_group_name = "dev-gd_linux_vm_rg"
+#     location            = "central india"
+#   }
+# }
+
+# application_gateways = {
+#   appgw1 = {
+#     name                 = "appgw-dev-001"
+#     resource_group_name  = "dev-gd_linux_vm_rg"
+#     location             = "central india"
+#     subnet_id            = ""
+#     public_ip_address_id = ""
+#   }
 # }
