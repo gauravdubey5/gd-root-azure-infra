@@ -56,4 +56,5 @@ output "managed_disks" {
 output "virtual_machines" {
   description = "The created Linux Virtual Machines."
   value       = module.vm.linux_virtual_machines
+  sensitive   = true
 }

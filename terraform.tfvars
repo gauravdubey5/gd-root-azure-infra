@@ -57,62 +57,64 @@ nic = {
   }
 }
 
-# Optional modules (uncomment to activate):
-# nsg = {
-#   nsg1 = {
-#     name                = "gd-linux-nsg"
-#     location            = "central india"
-#     resource_group_name = "dev-gd_linux_vm_rg"
-#   }
-# }
 
-# virtual_machines = {
-#   frontend_1 = {
-#     name                = "dev-gd-linux-vm-frontend"
-#     location            = "central india"
-#     resource_group_name = "dev-gd_linux_vm_rg"
-#     nic_name            = "dev-gd-linux-nic"
-#     size                = "Standard_B1s"
-#     admin_username      = "devopsadmin"
-#     admin_password      = "ComplexPassword123!"
-#     image_publisher     = "Canonical"
-#     image_offer         = "0001-com-ubuntu-server-jammy"
-#     image_sku           = "22_04-lts"
-#     image_version       = "latest"
-#   }
-# }
+nsg = {
+  nsg1 = {
+    name                = "gd-linux-nsg"
+    location            = "central india"
+    resource_group_name = "dev-gd_linux_vm_rg"
+  }
+}
 
-# route_tables = {
-#   rt1 = {
-#     name                = "rt-dev-001"
-#     resource_group_name = "dev-gd_linux_vm_rg"
-#     location            = "central india"
-#     routes              = []
-#   }
-# }
+virtual_machines = {
+  frontend_1 = {
+    name                = "dev-gd-linux-vm-frontend"
+    location            = "central india"
+    resource_group_name = "dev-gd_linux_vm_rg"
+    nic_name            = "dev-gd-linux-nic"
+    size                = "Standard_B1s"
+    admin_username      = "devopsadmin"
+    admin_password      = "ComplexPassword123!"
+    image_publisher     = "Canonical"
+    image_offer         = "0001-com-ubuntu-server-jammy"
+    image_sku           = "22_04-lts"
+    image_version       = "latest"
+  }
+}
 
-# nat_gateways = {
-#   nat1 = {
-#     name                = "nat-dev-001"
-#     resource_group_name = "dev-gd_linux_vm_rg"
-#     location            = "central india"
-#   }
-# }
+route_tables = {
+  rt1 = {
+    name                = "rt-dev-001"
+    resource_group_name = "dev-gd_linux_vm_rg"
+    location            = "central india"
+    routes              = []
+  }
+}
 
-# load_balancers = {
-#   lb1 = {
-#     name                = "lb-dev-001"
-#     resource_group_name = "dev-gd_linux_vm_rg"
-#     location            = "central india"
-#   }
-# }
+nat_gateways = {
+  nat1 = {
+    name                = "nat-dev-001"
+    resource_group_name = "dev-gd_linux_vm_rg"
+    location            = "central india"
+  }
+}
 
+load_balancers = {
+  lb1 = {
+    name                = "lb-dev-001"
+    resource_group_name = "dev-gd_linux_vm_rg"
+    location            = "central india"
+  }
+}
+
+application_gateways = {}
+# Uncomment and supply valid subnet_id and public_ip_address_id to provision Application Gateway:
 # application_gateways = {
 #   appgw1 = {
 #     name                 = "appgw-dev-001"
 #     resource_group_name  = "dev-gd_linux_vm_rg"
 #     location             = "central india"
-#     subnet_id            = ""
-#     public_ip_address_id = ""
+#     subnet_id            = "/subscriptions/.../subnets/..."
+#     public_ip_address_id = "/subscriptions/.../publicIPAddresses/..."
 #   }
 # }

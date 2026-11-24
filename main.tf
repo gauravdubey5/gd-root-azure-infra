@@ -77,7 +77,7 @@ module "lb" {
 module "app_gateway" {
   depends_on           = [module.rg, module.pip, module.subnet]
   source               = "git::https://github.com/gauravdubey5/gd-child-app-gateway.git?ref=v1.0.0"
-  application_gateways = var.application_gateways
+  application_gateways = { for k, v in var.application_gateways : k => v if try(v.subnet_id, "") != "" && try(v.public_ip_address_id, "") != "" }
 }
 
 # 11. Managed Disks
