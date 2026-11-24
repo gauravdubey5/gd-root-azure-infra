@@ -1,59 +1,33 @@
-locals {
-  common_tags = merge(
-    {
-      Environment = var.environment
-      Project     = "CloudPlatform"
-      ManagedBy   = "Terraform"
-      CostCenter  = "Infrastructure"
-    },
-    var.tags
-  )
-}
-
 # 1. Resource Group
 module "rg" {
-  source = "git::https://github.com/gauravdubey5/gd-child-rg.git?ref=v1.0.0"
-
-  name       = var.resource_group_name
-  location   = var.location
-  lock_level = var.environment == "prod" ? "CanNotDelete" : null
-  tags       = local.common_tags
+  source         = "git::https://github.com/gauravdubey5/gd-child-rg.git?ref=v1.0.4"
+  resource_group = var.rg
 }
 
 # 2. Virtual Network
 module "vnet" {
-  source = "git::https://github.com/gauravdubey5/gd-child-vnet.git?ref=v1.0.0"
-
-  name                = var.vnet_name
-  resource_group_name = module.rg.name
-  location            = module.rg.location
-  address_space       = var.vnet_address_space
-  dns_servers         = var.vnet_dns_servers
-  tags                = local.common_tags
+  depends_on      = [module.rg]
+  source          = "git::https://github.com/gauravdubey5/gd-child-vnet.git?ref=v1.0.4"
+  virtual_network = var.vnet
 }
 
-# 3. Network Security Group
-module "nsg" {
-  source = "git::https://github.com/gauravdubey5/gd-child-nsg.git?ref=v1.0.0"
-
-  name                = var.nsg_name
-  resource_group_name = module.rg.name
-  location            = module.rg.location
-  security_rules      = var.security_rules
-  tags                = local.common_tags
-}
-
-# 4. Subnets
+# 3. Subnets
 module "subnet" {
-  source = "git::https://github.com/gauravdubey5/gd-child-subnet.git?ref=v1.0.1"
+  depends_on = [module.vnet]
+  source     = "git::https://github.com/gauravdubey5/gd-child-subnet.git?ref=v1.0.4"
+  subnets    = var.subnets
+}
 
-  for_each = var.subnets
+# 4. Public IP
+module "pip" {
+  depends_on = [module.rg]
+  source     = "git::https://github.com/gauravdubey5/gd-child-public-ip.git?ref=v1.0.4"
+  public_ip  = var.pip
+}
 
-  name                             = each.key
-  resource_group_name              = module.rg.name
-  virtual_network_name             = module.vnet.name
-  address_prefixes                 = each.value.address_prefixes
-  associate_network_security_group = each.value.associate_nsg
-  network_security_group_id        = each.value.associate_nsg ? module.nsg.id : null
-  service_endpoints                = each.value.service_endpoints
+# 5. Network Interface
+module "nic" {
+  depends_on        = [module.rg, module.subnet, module.pip]
+  source            = "git::https://github.com/gauravdubey5/gd-child-nic.git?ref=v1.0.4"
+  network_interface = var.nic
 }
