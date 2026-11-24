@@ -107,14 +107,14 @@ load_balancers = {
   }
 }
 
-application_gateways = {}
-# Uncomment and supply valid subnet_id and public_ip_address_id to provision Application Gateway:
-# application_gateways = {
-#   appgw1 = {
-#     name                 = "appgw-dev-001"
-#     resource_group_name  = "dev-gd_linux_vm_rg"
-#     location             = "central india"
-#     subnet_id            = "/subscriptions/.../subnets/..."
-#     public_ip_address_id = "/subscriptions/.../publicIPAddresses/..."
-#   }
-# }
+
+application_gateways = {
+  appgw1 = {
+    name                 = "appgw-dev-001"
+    resource_group_name  = "dev-gd_linux_vm_rg"
+    location             = "central india"
+    subnet_name          = "dev-gd-linux-subnet-frontend"
+    virtual_network_name = "dev-gd-linux-vnet"
+    public_ip_name       = "dev-gd-linux-ip"
+  }
+}

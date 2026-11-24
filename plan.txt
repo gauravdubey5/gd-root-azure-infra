@@ -1,0 +1,615 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # module.lb.azurerm_lb.lbs["lb1"] will be created
+  + resource "azurerm_lb" "lbs" {
+      + id                   = (known after apply)
+      + location             = "centralindia"
+      + name                 = "lb-dev-001"
+      + private_ip_address   = (known after apply)
+      + private_ip_addresses = (known after apply)
+      + public_ip_address_id = (known after apply)
+      + resource_group_name  = "dev-gd_linux_vm_rg"
+      + sku                  = "Standard"
+      + sku_tier             = "Regional"
+      + subnet_id            = (known after apply)
+
+      + frontend_ip_configuration {
+          + gateway_load_balancer_frontend_ip_configuration_id = (known after apply)
+          + id                                                 = (known after apply)
+          + inbound_nat_rules                                  = (known after apply)
+          + load_balancer_rules                                = (known after apply)
+          + name                                               = "LoadBalancerFrontEnd"
+          + outbound_rules                                     = (known after apply)
+          + private_ip_address                                 = (known after apply)
+          + private_ip_address_allocation                      = (known after apply)
+          + private_ip_address_version                         = (known after apply)
+          + public_ip_prefix_id                                = (known after apply)
+        }
+    }
+
+  # module.nat_gateway["nat1"].azurerm_nat_gateway.nat will be created
+  + resource "azurerm_nat_gateway" "nat" {
+      + id                      = (known after apply)
+      + idle_timeout_in_minutes = 4
+      + location                = "centralindia"
+      + name                    = "nat-dev-001"
+      + resource_group_name     = "dev-gd_linux_vm_rg"
+      + resource_guid           = (known after apply)
+      + sku_name                = "Standard"
+      + zones                   = [
+          + "1",
+        ]
+    }
+
+  # module.nic.data.azurerm_public_ip.public_ips["nic1"] will be read during apply
+  # (depends on a resource or a module with changes pending)
+ <= data "azurerm_public_ip" "public_ips" {
+      + allocation_method       = (known after apply)
+      + ddos_protection_mode    = (known after apply)
+      + ddos_protection_plan_id = (known after apply)
+      + domain_name_label       = (known after apply)
+      + fqdn                    = (known after apply)
+      + id                      = (known after apply)
+      + idle_timeout_in_minutes = (known after apply)
+      + ip_address              = (known after apply)
+      + ip_tags                 = (known after apply)
+      + ip_version              = (known after apply)
+      + location                = (known after apply)
+      + name                    = "dev-gd-linux-ip"
+      + resource_group_name     = "dev-gd_linux_vm_rg"
+      + reverse_fqdn            = (known after apply)
+      + sku                     = (known after apply)
+      + tags                    = (known after apply)
+      + zones                   = (known after apply)
+    }
+
+  # module.nic.data.azurerm_subnet.subnets["nic1"] will be read during apply
+  # (depends on a resource or a module with changes pending)
+ <= data "azurerm_subnet" "subnets" {
+      + address_prefix                                = (known after apply)
+      + address_prefixes                              = (known after apply)
+      + default_outbound_access_enabled               = (known after apply)
+      + id                                            = (known after apply)
+      + name                                          = "dev-gd-linux-subnet"
+      + network_security_group_id                     = (known after apply)
+      + private_endpoint_network_policies             = (known after apply)
+      + private_link_service_network_policies_enabled = (known after apply)
+      + resource_group_name                           = "dev-gd_linux_vm_rg"
+      + route_table_id                                = (known after apply)
+      + service_endpoints                             = (known after apply)
+      + virtual_network_name                          = "dev-gd-linux-vnet"
+    }
+
+  # module.nic.azurerm_network_interface.network_interfaces["nic1"] will be created
+  + resource "azurerm_network_interface" "network_interfaces" {
+      + accelerated_networking_enabled = false
+      + applied_dns_servers            = (known after apply)
+      + id                             = (known after apply)
+      + internal_domain_name_suffix    = (known after apply)
+      + ip_forwarding_enabled          = false
+      + location                       = "centralindia"
+      + mac_address                    = (known after apply)
+      + name                           = "dev-gd-linux-nic"
+      + private_ip_address             = (known after apply)
+      + private_ip_addresses           = (known after apply)
+      + resource_group_name            = "dev-gd_linux_vm_rg"
+      + virtual_machine_id             = (known after apply)
+
+      + ip_configuration {
+          + gateway_load_balancer_frontend_ip_configuration_id = (known after apply)
+          + name                                               = "config123"
+          + primary                                            = (known after apply)
+          + private_ip_address                                 = (known after apply)
+          + private_ip_address_allocation                      = "Dynamic"
+          + private_ip_address_version                         = "IPv4"
+          + public_ip_address_id                               = (known after apply)
+          + subnet_id                                          = (known after apply)
+        }
+    }
+
+  # module.nsg.azurerm_network_security_group.network_security_groups["nsg1"] will be created
+  + resource "azurerm_network_security_group" "network_security_groups" {
+      + id                  = (known after apply)
+      + location            = "centralindia"
+      + name                = "gd-linux-nsg"
+      + resource_group_name = "dev-gd_linux_vm_rg"
+      + security_rule       = [
+          + {
+              + access                                     = "Allow"
+              + destination_address_prefix                 = "*"
+              + destination_address_prefixes               = []
+              + destination_application_security_group_ids = []
+              + destination_port_range                     = "22"
+              + destination_port_ranges                    = []
+              + direction                                  = "Inbound"
+              + name                                       = "Allow-SSH"
+              + priority                                   = 100
+              + protocol                                   = "Tcp"
+              + source_address_prefix                      = "*"
+              + source_address_prefixes                    = []
+              + source_application_security_group_ids      = []
+              + source_port_range                          = "*"
+              + source_port_ranges                         = []
+                # (1 unchanged attribute hidden)
+            },
+          + {
+              + access                                     = "Allow"
+              + destination_address_prefix                 = "*"
+              + destination_address_prefixes               = []
+              + destination_application_security_group_ids = []
+              + destination_port_range                     = "443"
+              + destination_port_ranges                    = []
+              + direction                                  = "Inbound"
+              + name                                       = "Allow-HTTPS"
+              + priority                                   = 120
+              + protocol                                   = "Tcp"
+              + source_address_prefix                      = "*"
+              + source_address_prefixes                    = []
+              + source_application_security_group_ids      = []
+              + source_port_range                          = "*"
+              + source_port_ranges                         = []
+                # (1 unchanged attribute hidden)
+            },
+          + {
+              + access                                     = "Allow"
+              + destination_address_prefix                 = "*"
+              + destination_address_prefixes               = []
+              + destination_application_security_group_ids = []
+              + destination_port_range                     = "80"
+              + destination_port_ranges                    = []
+              + direction                                  = "Inbound"
+              + name                                       = "Allow-HTTP"
+              + priority                                   = 110
+              + protocol                                   = "Tcp"
+              + source_address_prefix                      = "*"
+              + source_address_prefixes                    = []
+              + source_application_security_group_ids      = []
+              + source_port_range                          = "*"
+              + source_port_ranges                         = []
+                # (1 unchanged attribute hidden)
+            },
+        ]
+    }
+
+  # module.pip.azurerm_public_ip.public_ip["Public_IP1"] will be created
+  + resource "azurerm_public_ip" "public_ip" {
+      + allocation_method       = "Static"
+      + ddos_protection_mode    = "VirtualNetworkInherited"
+      + fqdn                    = (known after apply)
+      + id                      = (known after apply)
+      + idle_timeout_in_minutes = 4
+      + ip_address              = (known after apply)
+      + ip_version              = "IPv4"
+      + location                = "centralindia"
+      + name                    = "dev-gd-linux-ip"
+      + resource_group_name     = "dev-gd_linux_vm_rg"
+      + sku                     = "Standard"
+      + sku_tier                = "Regional"
+    }
+
+  # module.rg.azurerm_resource_group.resource_groups["rg1"] will be created
+  + resource "azurerm_resource_group" "resource_groups" {
+      + id       = (known after apply)
+      + location = "centralindia"
+      + name     = "dev-gd_linux_vm_rg"
+    }
+
+  # module.route_table["rt1"].azurerm_route_table.rt will be created
+  + resource "azurerm_route_table" "rt" {
+      + bgp_route_propagation_enabled = true
+      + id                            = (known after apply)
+      + location                      = "centralindia"
+      + name                          = "rt-dev-001"
+      + resource_group_name           = "dev-gd_linux_vm_rg"
+      + route                         = (known after apply)
+      + subnets                       = (known after apply)
+    }
+
+  # module.subnet.azurerm_subnet.subnet["subnet1"] will be created
+  + resource "azurerm_subnet" "subnet" {
+      + address_prefixes                              = [
+          + "10.0.1.0/24",
+        ]
+      + default_outbound_access_enabled               = true
+      + id                                            = (known after apply)
+      + name                                          = "dev-gd-linux-subnet-frontend"
+      + private_endpoint_network_policies             = "Disabled"
+      + private_link_service_network_policies_enabled = true
+      + resource_group_name                           = "dev-gd_linux_vm_rg"
+      + virtual_network_name                          = "dev-gd-linux-vnet"
+    }
+
+  # module.subnet.azurerm_subnet.subnet["subnet2"] will be created
+  + resource "azurerm_subnet" "subnet" {
+      + address_prefixes                              = [
+          + "10.0.2.0/24",
+        ]
+      + default_outbound_access_enabled               = true
+      + id                                            = (known after apply)
+      + name                                          = "dev-gd-linux-subnet-backend"
+      + private_endpoint_network_policies             = "Disabled"
+      + private_link_service_network_policies_enabled = true
+      + resource_group_name                           = "dev-gd_linux_vm_rg"
+      + virtual_network_name                          = "dev-gd-linux-vnet"
+    }
+
+  # module.subnet.azurerm_subnet.subnet["subnet3"] will be created
+  + resource "azurerm_subnet" "subnet" {
+      + address_prefixes                              = [
+          + "10.0.3.0/24",
+        ]
+      + default_outbound_access_enabled               = true
+      + id                                            = (known after apply)
+      + name                                          = "dev-gd-linux-subnet-database"
+      + private_endpoint_network_policies             = "Disabled"
+      + private_link_service_network_policies_enabled = true
+      + resource_group_name                           = "dev-gd_linux_vm_rg"
+      + virtual_network_name                          = "dev-gd-linux-vnet"
+    }
+
+  # module.vm.data.azurerm_network_interface.nics["frontend_1"] will be read during apply
+  # (depends on a resource or a module with changes pending)
+ <= data "azurerm_network_interface" "nics" {
+      + accelerated_networking_enabled = (known after apply)
+      + applied_dns_servers            = (known after apply)
+      + dns_servers                    = (known after apply)
+      + id                             = (known after apply)
+      + internal_dns_name_label        = (known after apply)
+      + ip_configuration               = (known after apply)
+      + ip_forwarding_enabled          = (known after apply)
+      + location                       = (known after apply)
+      + mac_address                    = (known after apply)
+      + name                           = "dev-gd-linux-nic"
+      + network_security_group_id      = (known after apply)
+      + private_ip_address             = (known after apply)
+      + private_ip_addresses           = (known after apply)
+      + resource_group_name            = "dev-gd_linux_vm_rg"
+      + tags                           = (known after apply)
+      + virtual_machine_id             = (known after apply)
+    }
+
+  # module.vm.azurerm_linux_virtual_machine.linux_vms["frontend_1"] will be created
+  + resource "azurerm_linux_virtual_machine" "linux_vms" {
+      + admin_password                                         = (sensitive value)
+      + admin_username                                         = "devopsadmin"
+      + allow_extension_operations                             = (known after apply)
+      + bypass_platform_safety_checks_on_user_schedule_enabled = false
+      + computer_name                                          = (known after apply)
+      + disable_password_authentication                        = false
+      + disk_controller_type                                   = (known after apply)
+      + extensions_time_budget                                 = "PT1H30M"
+      + id                                                     = (known after apply)
+      + location                                               = "centralindia"
+      + max_bid_price                                          = -1
+      + name                                                   = "dev-gd-linux-vm-frontend"
+      + network_interface_ids                                  = (known after apply)
+      + os_managed_disk_id                                     = (known after apply)
+      + patch_assessment_mode                                  = (known after apply)
+      + patch_mode                                             = (known after apply)
+      + platform_fault_domain                                  = -1
+      + priority                                               = "Regular"
+      + private_ip_address                                     = (known after apply)
+      + private_ip_addresses                                   = (known after apply)
+      + provision_vm_agent                                     = (known after apply)
+      + public_ip_address                                      = (known after apply)
+      + public_ip_addresses                                    = (known after apply)
+      + resource_group_name                                    = "dev-gd_linux_vm_rg"
+      + size                                                   = "Standard_B1s"
+      + virtual_machine_id                                     = (known after apply)
+      + vm_agent_platform_updates_enabled                      = (known after apply)
+
+      + os_disk {
+          + caching                   = "ReadWrite"
+          + disk_size_gb              = 30
+          + id                        = (known after apply)
+          + name                      = (known after apply)
+          + storage_account_type      = "Standard_LRS"
+          + write_accelerator_enabled = false
+        }
+
+      + source_image_reference {
+          + offer     = "0001-com-ubuntu-server-jammy"
+          + publisher = "Canonical"
+          + sku       = "22_04-lts"
+          + version   = "latest"
+        }
+
+      + termination_notification (known after apply)
+    }
+
+  # module.vnet.azurerm_virtual_network.virtual_networks["vnet1"] will be created
+  + resource "azurerm_virtual_network" "virtual_networks" {
+      + address_space                  = [
+          + "10.0.0.0/16",
+        ]
+      + dns_servers                    = (known after apply)
+      + guid                           = (known after apply)
+      + id                             = (known after apply)
+      + location                       = "centralindia"
+      + name                           = "dev-gd-linux-vnet"
+      + private_endpoint_vnet_policies = "Disabled"
+      + resource_group_name            = "dev-gd_linux_vm_rg"
+      + subnet                         = (known after apply)
+    }
+
+Plan: 12 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + application_gateways    = {}
+  + load_balancers          = {
+      + lb1 = {
+          + edge_zone                 = null
+          + frontend_ip_configuration = [
+              + {
+                  + gateway_load_balancer_frontend_ip_configuration_id = (known after apply)
+                  + id                                                 = (known after apply)
+                  + inbound_nat_rules                                  = (known after apply)
+                  + load_balancer_rules                                = (known after apply)
+                  + name                                               = "LoadBalancerFrontEnd"
+                  + outbound_rules                                     = (known after apply)
+                  + private_ip_address                                 = (known after apply)
+                  + private_ip_address_allocation                      = (known after apply)
+                  + private_ip_address_version                         = (known after apply)
+                  + public_ip_address_id                               = null
+                  + public_ip_prefix_id                                = (known after apply)
+                  + subnet_id                                          = null
+                  + zones                                              = null
+                },
+            ]
+          + id                        = (known after apply)
+          + location                  = "centralindia"
+          + name                      = "lb-dev-001"
+          + private_ip_address        = (known after apply)
+          + private_ip_addresses      = (known after apply)
+          + public_ip_address_id      = (known after apply)
+          + resource_group_name       = "dev-gd_linux_vm_rg"
+          + sku                       = "Standard"
+          + sku_tier                  = "Regional"
+          + subnet_id                 = (known after apply)
+          + tags                      = null
+          + timeouts                  = null
+        }
+    }
+  + managed_disks           = {}
+  + nat_gateways            = {
+      + nat1 = {
+          + id                  = (known after apply)
+          + name                = "nat-dev-001"
+          + resource_group_name = "dev-gd_linux_vm_rg"
+        }
+    }
+  + network_interfaces      = {
+      + nic1 = {
+          + accelerated_networking_enabled = false
+          + applied_dns_servers            = (known after apply)
+          + auxiliary_mode                 = null
+          + auxiliary_sku                  = null
+          + dns_servers                    = null
+          + edge_zone                      = null
+          + id                             = (known after apply)
+          + internal_dns_name_label        = null
+          + internal_domain_name_suffix    = (known after apply)
+          + ip_configuration               = [
+              + {
+                  + gateway_load_balancer_frontend_ip_configuration_id = (known after apply)
+                  + name                                               = "config123"
+                  + primary                                            = (known after apply)
+                  + private_ip_address                                 = (known after apply)
+                  + private_ip_address_allocation                      = "Dynamic"
+                  + private_ip_address_version                         = "IPv4"
+                  + public_ip_address_id                               = (known after apply)
+                  + subnet_id                                          = (known after apply)
+                },
+            ]
+          + ip_forwarding_enabled          = false
+          + location                       = "centralindia"
+          + mac_address                    = (known after apply)
+          + name                           = "dev-gd-linux-nic"
+          + private_ip_address             = (known after apply)
+          + private_ip_addresses           = (known after apply)
+          + resource_group_name            = "dev-gd_linux_vm_rg"
+          + tags                           = null
+          + timeouts                       = null
+          + virtual_machine_id             = (known after apply)
+        }
+    }
+  + network_security_groups = {
+      + nsg1 = {
+          + id                  = (known after apply)
+          + location            = "centralindia"
+          + name                = "gd-linux-nsg"
+          + resource_group_name = "dev-gd_linux_vm_rg"
+          + security_rule       = [
+              + {
+                  + access                                     = "Allow"
+                  + description                                = ""
+                  + destination_address_prefix                 = "*"
+                  + destination_address_prefixes               = []
+                  + destination_application_security_group_ids = []
+                  + destination_port_range                     = "22"
+                  + destination_port_ranges                    = []
+                  + direction                                  = "Inbound"
+                  + name                                       = "Allow-SSH"
+                  + priority                                   = 100
+                  + protocol                                   = "Tcp"
+                  + source_address_prefix                      = "*"
+                  + source_address_prefixes                    = []
+                  + source_application_security_group_ids      = []
+                  + source_port_range                          = "*"
+                  + source_port_ranges                         = []
+                },
+              + {
+                  + access                                     = "Allow"
+                  + description                                = ""
+                  + destination_address_prefix                 = "*"
+                  + destination_address_prefixes               = []
+                  + destination_application_security_group_ids = []
+                  + destination_port_range                     = "443"
+                  + destination_port_ranges                    = []
+                  + direction                                  = "Inbound"
+                  + name                                       = "Allow-HTTPS"
+                  + priority                                   = 120
+                  + protocol                                   = "Tcp"
+                  + source_address_prefix                      = "*"
+                  + source_address_prefixes                    = []
+                  + source_application_security_group_ids      = []
+                  + source_port_range                          = "*"
+                  + source_port_ranges                         = []
+                },
+              + {
+                  + access                                     = "Allow"
+                  + description                                = ""
+                  + destination_address_prefix                 = "*"
+                  + destination_address_prefixes               = []
+                  + destination_application_security_group_ids = []
+                  + destination_port_range                     = "80"
+                  + destination_port_ranges                    = []
+                  + direction                                  = "Inbound"
+                  + name                                       = "Allow-HTTP"
+                  + priority                                   = 110
+                  + protocol                                   = "Tcp"
+                  + source_address_prefix                      = "*"
+                  + source_address_prefixes                    = []
+                  + source_application_security_group_ids      = []
+                  + source_port_range                          = "*"
+                  + source_port_ranges                         = []
+                },
+            ]
+          + tags                = null
+          + timeouts            = null
+        }
+    }
+  + public_ips              = {
+      + Public_IP1 = {
+          + allocation_method       = "Static"
+          + ddos_protection_mode    = "VirtualNetworkInherited"
+          + ddos_protection_plan_id = null
+          + domain_name_label       = null
+          + domain_name_label_scope = null
+          + edge_zone               = null
+          + fqdn                    = (known after apply)
+          + id                      = (known after apply)
+          + idle_timeout_in_minutes = 4
+          + ip_address              = (known after apply)
+          + ip_tags                 = null
+          + ip_version              = "IPv4"
+          + location                = "centralindia"
+          + name                    = "dev-gd-linux-ip"
+          + public_ip_prefix_id     = null
+          + resource_group_name     = "dev-gd_linux_vm_rg"
+          + reverse_fqdn            = null
+          + sku                     = "Standard"
+          + sku_tier                = "Regional"
+          + tags                    = null
+          + timeouts                = null
+          + zones                   = null
+        }
+    }
+  + resource_groups         = {
+      + rg1 = {
+          + id         = (known after apply)
+          + location   = "centralindia"
+          + managed_by = null
+          + name       = "dev-gd_linux_vm_rg"
+          + tags       = null
+          + timeouts   = null
+        }
+    }
+  + route_tables            = {
+      + rt1 = {
+          + id      = (known after apply)
+          + name    = "rt-dev-001"
+          + subnets = (known after apply)
+        }
+    }
+  + subnets                 = {
+      + subnet1 = {
+          + address_prefixes                              = [
+              + "10.0.1.0/24",
+            ]
+          + default_outbound_access_enabled               = true
+          + delegation                                    = []
+          + id                                            = (known after apply)
+          + ip_address_pool                               = []
+          + name                                          = "dev-gd-linux-subnet-frontend"
+          + private_endpoint_network_policies             = "Disabled"
+          + private_link_service_network_policies_enabled = true
+          + resource_group_name                           = "dev-gd_linux_vm_rg"
+          + service_endpoint_policy_ids                   = null
+          + service_endpoints                             = null
+          + sharing_scope                                 = null
+          + timeouts                                      = null
+          + virtual_network_name                          = "dev-gd-linux-vnet"
+        }
+      + subnet2 = {
+          + address_prefixes                              = [
+              + "10.0.2.0/24",
+            ]
+          + default_outbound_access_enabled               = true
+          + delegation                                    = []
+          + id                                            = (known after apply)
+          + ip_address_pool                               = []
+          + name                                          = "dev-gd-linux-subnet-backend"
+          + private_endpoint_network_policies             = "Disabled"
+          + private_link_service_network_policies_enabled = true
+          + resource_group_name                           = "dev-gd_linux_vm_rg"
+          + service_endpoint_policy_ids                   = null
+          + service_endpoints                             = null
+          + sharing_scope                                 = null
+          + timeouts                                      = null
+          + virtual_network_name                          = "dev-gd-linux-vnet"
+        }
+      + subnet3 = {
+          + address_prefixes                              = [
+              + "10.0.3.0/24",
+            ]
+          + default_outbound_access_enabled               = true
+          + delegation                                    = []
+          + id                                            = (known after apply)
+          + ip_address_pool                               = []
+          + name                                          = "dev-gd-linux-subnet-database"
+          + private_endpoint_network_policies             = "Disabled"
+          + private_link_service_network_policies_enabled = true
+          + resource_group_name                           = "dev-gd_linux_vm_rg"
+          + service_endpoint_policy_ids                   = null
+          + service_endpoints                             = null
+          + sharing_scope                                 = null
+          + timeouts                                      = null
+          + virtual_network_name                          = "dev-gd-linux-vnet"
+        }
+    }
+  + virtual_machines        = (sensitive value)
+  + virtual_networks        = {
+      + vnet1 = {
+          + address_space                  = [
+              + "10.0.0.0/16",
+            ]
+          + bgp_community                  = null
+          + ddos_protection_plan           = []
+          + dns_servers                    = (known after apply)
+          + edge_zone                      = null
+          + encryption                     = []
+          + flow_timeout_in_minutes        = null
+          + guid                           = (known after apply)
+          + id                             = (known after apply)
+          + ip_address_pool                = []
+          + location                       = "centralindia"
+          + name                           = "dev-gd-linux-vnet"
+          + private_endpoint_vnet_policies = "Disabled"
+          + resource_group_name            = "dev-gd_linux_vm_rg"
+          + subnet                         = (known after apply)
+          + tags                           = null
+          + timeouts                       = null
+        }
+    }
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
