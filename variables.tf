@@ -67,3 +67,45 @@ variable "virtual_machines" {
   type        = any
   default     = {}
 }
+
+variable "vnet_peerings" {
+  description = "Virtual Network Peering configurations"
+  type        = any
+  default     = {}
+}
+
+variable "private_endpoints" {
+  description = "Private Endpoint configurations"
+  type        = any
+  default     = {}
+}
+
+variable "storage_accounts" {
+  description = "Storage Account configurations"
+  type        = any
+  default     = {}
+}
+
+variable "app_service_plans" {
+  description = "App Service Plan configurations"
+  type        = any
+  default     = {}
+}
+
+variable "web_apps" {
+  description = "Web App configurations"
+  type        = any
+  default     = {}
+}
+
+variable "postgresql_servers" {
+  description = "PostgreSQL Flexible Server and Database configurations"
+  type        = any
+  default     = {}
+}
+
+variable "key_vaults" {
+  description = "Azure Key Vault configurations"
+  type        = any
+  default     = {}
+}

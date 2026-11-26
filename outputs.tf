@@ -58,3 +58,55 @@ output "virtual_machines" {
   value       = module.vm.linux_virtual_machines
   sensitive   = true
 }
+
+output "vnet_peerings" {
+  description = "The created Virtual Network Peerings."
+  value       = module.vnet_peering.vnet_peerings
+}
+
+output "private_endpoints" {
+  description = "The created Private Endpoints."
+  value       = module.private_endpoint.private_endpoints
+}
+
+output "storage_accounts" {
+  description = "The created Storage Accounts."
+  value       = module.storage_account.storage_accounts
+  sensitive   = true
+}
+
+output "storage_account_ids" {
+  description = "The created Storage Account IDs."
+  value       = module.storage_account.storage_account_ids
+}
+
+output "app_service_plans" {
+  description = "The created App Service Plans."
+  value       = module.app_service_plan.app_service_plans
+}
+
+output "web_app_ids" {
+  description = "The created Web App IDs."
+  value       = module.web_app.web_app_ids
+}
+
+output "web_app_default_hostnames" {
+  description = "The created Web App default hostnames."
+  value       = module.web_app.web_app_default_hostnames
+}
+
+output "postgresql_servers" {
+  description = "The created PostgreSQL Flexible Servers."
+  value       = module.postgresql_database.postgresql_servers
+  sensitive   = true
+}
+
+output "postgresql_server_fqdns" {
+  description = "The created PostgreSQL Flexible Server FQDNs."
+  value       = module.postgresql_database.postgresql_server_fqdns
+}
+
+output "key_vaults" {
+  description = "The created Azure Key Vaults."
+  value       = module.key_vault.key_vaults
+}

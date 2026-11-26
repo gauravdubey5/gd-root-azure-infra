@@ -93,3 +93,52 @@ module "vm" {
   source           = "git::https://github.com/gauravdubey5/gd-child-vm.git?ref=v1.0.0"
   virtual_machines = var.virtual_machines
 }
+
+# 13. VNet Peering
+module "vnet_peering" {
+  depends_on    = [module.vnet]
+  source        = "git::https://github.com/gauravdubey5/gd-child-vnet-peering.git?ref=v1.0.0"
+  vnet_peerings = var.vnet_peerings
+}
+
+# 14. Storage Account
+module "storage_account" {
+  depends_on       = [module.rg]
+  source           = "git::https://github.com/gauravdubey5/gd-child-storage-account.git?ref=v1.0.0"
+  storage_accounts = var.storage_accounts
+}
+
+# 15. App Service Plan
+module "app_service_plan" {
+  depends_on        = [module.rg]
+  source            = "git::https://github.com/gauravdubey5/gd-child-app-services.git?ref=v1.0.0"
+  app_service_plans = var.app_service_plans
+}
+
+# 16. Web App
+module "web_app" {
+  depends_on = [module.rg, module.app_service_plan, module.subnet]
+  source     = "git::https://github.com/gauravdubey5/gd-child-web-app.git?ref=v1.0.0"
+  web_apps   = var.web_apps
+}
+
+# 17. PostgreSQL Database
+module "postgresql_database" {
+  depends_on         = [module.rg, module.subnet]
+  source             = "git::https://github.com/gauravdubey5/gd-child-postgresql-database.git?ref=v1.0.0"
+  postgresql_servers = var.postgresql_servers
+}
+
+# 18. Key Vault
+module "key_vault" {
+  depends_on = [module.rg]
+  source     = "git::https://github.com/gauravdubey5/gd-child-keyvault.git?ref=v1.0.0"
+  key_vaults = var.key_vaults
+}
+
+# 19. Private Endpoint
+module "private_endpoint" {
+  depends_on        = [module.rg, module.subnet, module.storage_account, module.key_vault, module.postgresql_database, module.web_app]
+  source            = "git::https://github.com/gauravdubey5/gd-child-private-endpoint.git?ref=v1.0.0"
+  private_endpoints = var.private_endpoints
+}

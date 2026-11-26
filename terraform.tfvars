@@ -118,3 +118,11 @@ application_gateways = {
     public_ip_name       = "dev-gd-linux-ip"
   }
 }
+
+vnet_peerings      = {}
+private_endpoints  = {}
+storage_accounts   = {}
+app_service_plans  = {}
+web_apps           = {}
+postgresql_servers = {}
+key_vaults         = {}
