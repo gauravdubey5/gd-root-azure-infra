@@ -18,10 +18,9 @@ GitHub Account: gauravdubey5
 │   ├── providers.tf
 │   ├── versions.tf
 │   ├── terraform.tfvars
-│   ├── pipelines/
-│   │   ├── terraform-validate.yml
-│   │   ├── terraform-plan.yml
-│   │   └── terraform-apply.yml
+│   ├── .github/workflows/
+│   │   ├── ci.yaml
+│   │   └── cd.yaml
 │   └── README.md
 │
 ├── Foundation & Security (Private Child Repos)
@@ -136,11 +135,15 @@ Outputs in [`outputs.tf`](./outputs.tf) expose created resources across all 19 m
 
 ---
 
-## 6. CI/CD Pipelines
+## 6. CI/CD Pipelines (GitHub Actions)
 
-- **`pipelines/terraform-validate.yml`**: Runs `terraform fmt`, `terraform init`, and `terraform validate`.
-- **`pipelines/terraform-plan.yml`**: Generates and publishes execution plans.
-- **`pipelines/terraform-apply.yml`**: Applies approved plans against target environments.
+- **[`.github/workflows/ci.yaml`](./.github/workflows/ci.yaml)**: Runs `terraform fmt -check`, `terraform init -backend=false`, and `terraform validate` on pushes/PRs, plus automated PR plans with summary comments when Azure OIDC secrets are configured.
+- **[`.github/workflows/cd.yaml`](./.github/workflows/cd.yaml)**: Runs validation, generates a plan artifact, and applies changes against target GitHub Environments (`dev`, `staging`, `prod`) on merges to `main` or manual `workflow_dispatch`.
+
+### Required GitHub Secrets
+
+- `GH_PAT`: GitHub PAT with read access to the private `gd-child-*` repositories.
+- `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`: Azure Workload Identity (OIDC) credentials for `azure/login@v2`.
 
 ---
 

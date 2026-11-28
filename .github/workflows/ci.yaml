@@ -1,0 +1,232 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+      - "feature/**"
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TF_VERSION: "1.9.0"
+  TF_IN_AUTOMATION: "true"
+  BACKEND_RESOURCE_GROUP: "rg-terraform-state-eastus2"
+  BACKEND_STORAGE_ACCOUNT: "sttfstategd001"
+  BACKEND_CONTAINER: "tfstate"
+
+jobs:
+  validate:
+    name: Format & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git for Private Child Modules
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -n "${GH_PAT:-}" ]; then
+            git config --global url."https://x-access-token:${GH_PAT}@github.com/".insteadOf "https://github.com/"
+          else
+            echo "::warning::GH_PAT secret is not set. Private gd-child-* modules may fail to clone during terraform init."
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init (Stateless)
+        run: terraform init -backend=false -input=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Check Variable Definition Files
+        run: |
+          if [ -f "terraform.tfvars" ]; then
+            echo "Found root terraform.tfvars"
+          fi
+          if compgen -G "environments/*.tfvars" > /dev/null; then
+            for env_file in environments/*.tfvars; do
+              echo "Found environment config: $env_file"
+            done
+          elif [ ! -f "terraform.tfvars" ]; then
+            echo "::error::No terraform.tfvars or environments/*.tfvars files found."
+            exit 1
+          fi
+
+  plan:
+    name: Terraform Plan (PR)
+    needs: validate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: "dev"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check Azure OIDC Configuration
+        id: azure_check
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          if [ -n "${AZURE_CLIENT_ID:-}" ] && [ -n "${AZURE_TENANT_ID:-}" ] && [ -n "${AZURE_SUBSCRIPTION_ID:-}" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Terraform Plan Skipped"
+              echo "Configure \`AZURE_CLIENT_ID\`, \`AZURE_TENANT_ID\`, and \`AZURE_SUBSCRIPTION_ID\` repository secrets to enable automated PR plans."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Configure Git for Private Child Modules
+        if: steps.azure_check.outputs.configured == 'true'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -n "${GH_PAT:-}" ]; then
+            git config --global url."https://x-access-token:${GH_PAT}@github.com/".insteadOf "https://github.com/"
+          fi
+
+      - name: Azure Login (OIDC)
+        if: steps.azure_check.outputs.configured == 'true'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        if: steps.azure_check.outputs.configured == 'true'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        if: steps.azure_check.outputs.configured == 'true'
+        id: init
+        run: |
+          if grep -qE 'backend\s+"azurerm"' *.tf; then
+            terraform init -input=false \
+              -backend-config="resource_group_name=${BACKEND_RESOURCE_GROUP}" \
+              -backend-config="storage_account_name=${BACKEND_STORAGE_ACCOUNT}" \
+              -backend-config="container_name=${BACKEND_CONTAINER}" \
+              -backend-config="key=gd-parent-infra/${ENVIRONMENT}.tfstate" \
+              -backend-config="use_azuread_auth=true"
+          else
+            echo "::warning::No backend \"azurerm\" block found in *.tf; initializing with local backend."
+            terraform init -input=false
+          fi
+
+      - name: Terraform Plan
+        if: steps.azure_check.outputs.configured == 'true'
+        id: plan
+        continue-on-error: true
+        run: |
+          VAR_FILE="terraform.tfvars"
+          if [ -f "environments/${ENVIRONMENT}.tfvars" ]; then
+            VAR_FILE="environments/${ENVIRONMENT}.tfvars"
+          fi
+          terraform plan -no-color -input=false -var-file="${VAR_FILE}" -out="${ENVIRONMENT}.tfplan"
+          terraform show -no-color "${ENVIRONMENT}.tfplan" > "${ENVIRONMENT}-plan.txt"
+
+      - name: Upload Plan Artifact
+        if: steps.azure_check.outputs.configured == 'true' && steps.plan.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-plan-${{ github.event.pull_request.number }}
+          path: |
+            ${{ env.ENVIRONMENT }}.tfplan
+            ${{ env.ENVIRONMENT }}-plan.txt
+          retention-days: 5
+
+      - name: Comment PR with Plan Summary
+        if: steps.azure_check.outputs.configured == 'true'
+        uses: actions/github-script@v7
+        env:
+          PLAN_STDOUT: ${{ steps.plan.outputs.stdout }}
+          VALIDATE_RESULT: ${{ needs.validate.result }}
+          INIT_OUTCOME: ${{ steps.init.outcome }}
+          PLAN_OUTCOME: ${{ steps.plan.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const rawPlan = (process.env.PLAN_STDOUT || '').trim();
+            const maxLen = 58000;
+            const planOutput = rawPlan.length > maxLen
+              ? rawPlan.slice(0, maxLen) + '\n... (truncated, see workflow logs or artifact for full plan)'
+              : rawPlan;
+
+            const body = [
+              `#### Terraform Format & Validate: \`${process.env.VALIDATE_RESULT}\``,
+              `#### Terraform Init: \`${process.env.INIT_OUTCOME}\``,
+              `#### Terraform Plan (\`${process.env.ENVIRONMENT}\`): \`${process.env.PLAN_OUTCOME}\``,
+              '',
+              '<details><summary>Show Plan</summary>',
+              '',
+              '```terraform',
+              planOutput || 'No plan output captured.',
+              '```',
+              '',
+              '</details>',
+              '',
+              `*Pushed by: @${context.actor}, Action: \`${context.eventName}\`*`
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('#### Terraform Format & Validate:')
+            );
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail Job if Plan Failed
+        if: steps.azure_check.outputs.configured == 'true' && steps.plan.outcome == 'failure'
+        run: exit 1
